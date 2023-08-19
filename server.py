@@ -2,8 +2,8 @@ import socket
 import numpy
 import cv2
 
-UDP_IP = "127.0.0.1"
-UDP_PORT = 9505
+ip = 'ec2-3-138-105-10.us-east-2.compute.amazonaws.com'
+port = 5001
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((UDP_IP, UDP_PORT))
