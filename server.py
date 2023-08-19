@@ -31,49 +31,48 @@ data_buffer = b""
 data_size = struct.calcsize("L")
 
 while True:
-    # 설정한 데이터의 크기보다 버퍼에 저장된 데이터의 크기가 작은 경우
-    while len(data_buffer) < data_size:
-        # 데이터 수신
-        data_buffer += client_socket.recv(4096)
+    try:
+        while len(data_buffer) < data_size:
+            # 데이터 수신
+            data = client_socket.recv(4096)
+            if not data:
+                break
+            data_buffer += data
 
-    # 버퍼의 저장된 데이터 분할
-    packed_data_size = data_buffer[:data_size]
-    data_buffer = data_buffer[data_size:]
+        if not data_buffer:
+            break
 
-    # struct.unpack : 변환된 바이트 객체를 원래의 데이터로 반환
-    # - > : 빅 엔디안(big endian)
-    #   - 엔디안(endian) : 컴퓨터의 메모리와 같은 1차원의 공간에 여러 개의 연속된 대상을 배열하는 방법
-    #   - 빅 엔디안(big endian) : 최상위 바이트부터 차례대로 저장
-    # - L : 부호없는 긴 정수(unsigned long) 4 bytes
-    frame_size = struct.unpack(">L", packed_data_size)[0]
+        packed_data_size = data_buffer[:data_size]
+        data_buffer = data_buffer[data_size:]
 
-    # 프레임 데이터의 크기보다 버퍼에 저장된 데이터의 크기가 작은 경우
-    while len(data_buffer) < frame_size:
-        # 데이터 수신
-        data_buffer += client_socket.recv(4096)
+        if len(packed_data_size) != 4:
+            print("데이터 크기가 부족하여 수신을 중단했습니다.")
+            break
 
-    # 프레임 데이터 분할
-    frame_data = data_buffer[:frame_size]
-    data_buffer = data_buffer[frame_size:]
+        frame_size = struct.unpack(">L", packed_data_size)[0]
 
-    print("수신 프레임 크기 : {} bytes".format(frame_size))
+        while len(data_buffer) < frame_size:
+            # 데이터 수신
+            data = client_socket.recv(4096)
+            if not data:
+                break
+            data_buffer += data
 
-    # loads : 직렬화된 데이터를 역직렬화
-    # - 역직렬화(de-serialization) : 직렬화된 파일이나 바이트 객체를 원래의 데이터로 복원하는 것
-    frame = pickle.loads(frame_data)
+        if not data_buffer:
+            break
 
-    # imdecode : 이미지(프레임) 디코딩
-    # 1) 인코딩된 이미지 배열
-    # 2) 이미지 파일을 읽을 때의 옵션
-    #    - IMREAD_COLOR : 이미지를 COLOR로 읽음
-    frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+        frame_data = data_buffer[:frame_size]
+        data_buffer = data_buffer[frame_size:]
 
-    # 프레임 출력
-    cv2.imshow('Frame', frame)
+        frame = pickle.loads(frame_data)
+        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+        cv2.imshow('Frame', frame)
 
-    # 'q' 키를 입력하면 종료
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q"):
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            break
+    except Exception as e:
+        print(f"예외 발생: {e}")
         break
 
 # 소켓 닫기
