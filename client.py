@@ -5,7 +5,7 @@ import pickle  # 객체의 직렬화 및 역직렬화 지원 모듈
 import struct  # 바이트(bytes) 형식의 데이터 처리 모듈
 
 # 서버 ip 주소 및 port 번호
-ip = '172.20.10.3'
+ip = 'ec2-3-138-105-10.us-east-2.compute.amazonaws.com'
 port = 50001
 
 # 카메라 또는 동영상
