@@ -5,7 +5,7 @@ import pickle  # 객체의 직렬화 및 역직렬화 지원 모듈
 import cv2  # OpenCV(실시간 이미지 프로세싱) 모듈
 
 # 서버 ip 주소 및 port 번호
-ip = '192.168.1.3'
+ip = 'ec2-3-138-105-10.us-east-2.compute.amazonaws.com'
 port = 50001
 
 # 소켓 객체 생성
