@@ -6,7 +6,7 @@ import cv2  # OpenCV(실시간 이미지 프로세싱) 모듈
 
 # 서버 ip 주소 및 port 번호
 ip = 'ec2-3-138-105-10.us-east-2.compute.amazonaws.com'
-port = 50001
+port = 5001
 
 # 소켓 객체 생성
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
