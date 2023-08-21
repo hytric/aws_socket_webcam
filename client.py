@@ -6,8 +6,8 @@ import time
 import pickle
 import zlib
 
-ip = 'ec2-3-138-105-10.us-east-2.compute.amazonaws.com'
-port = 5001
+ip = #IP
+port = #Port
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((ip, port))
