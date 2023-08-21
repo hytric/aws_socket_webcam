@@ -2,7 +2,24 @@ import socket
 import cv2
 import pickle
 import struct ## new
+import sys
 
+# 동영상 저장 파트
+# Set Video File Property
+videoFileName = 'output.avi'
+w = round(640)  # width
+h = round(480)  # height
+fps = 10 #cap.get(cv2.CAP_PROP_FPS)  # frame per second
+fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # fourcc
+delay = round(1000 / fps)  # set interval between frame
+
+# Save Video
+out = cv2.VideoWriter(videoFileName, fourcc, fps, (w, h))
+if not (out.isOpened()):
+    print("File isn't opend!!")
+    sys.exit()
+
+# 통신파트
 ip = #IP
 port = #PORT
 
@@ -19,7 +36,10 @@ conn,addr=s.accept()
 data = b""
 payload_size = struct.calcsize(">L")
 print("payload_size: {}".format(payload_size))
+
+
 while True:
+    # 영상 받는 파트
     while len(data) < payload_size:
         print("Recv: {}".format(len(data)))
         data += conn.recv(4096)
@@ -36,5 +56,9 @@ while True:
 
     frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
     frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-    cv2.imwrite('ImageWindow.png',frame)
+
+    # 동영상 저장파트
+    inversed = cv2.flip(frame, 1)  # inversed frame
+    out.write(inversed)  # save video frame
+    
     cv2.waitKey(1)
