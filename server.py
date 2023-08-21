@@ -3,8 +3,8 @@ import cv2
 import pickle
 import struct ## new
 
-ip = 'ec2-3-138-105-10.us-east-2.compute.amazonaws.com'
-port = 5001
+ip = #IP
+port = #PORT
 
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print('Socket created')
