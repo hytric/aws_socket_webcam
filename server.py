@@ -1,64 +1,75 @@
 import socket
 import cv2
 import pickle
-import struct ## new
+import struct
 import sys
 
-# 동영상 저장 파트
-# Set Video File Property
-videoFileName = 'output.avi'
-w = round(640)  # width
-h = round(480)  # height
-fps = 10 #cap.get(cv2.CAP_PROP_FPS)  # frame per second
-fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # fourcc
-delay = round(1000 / fps)  # set interval between frame
+try:
+    # 동영상 저장 파트
+    videoFileName = 'output.avi'
+    w = 640
+    h = 480
+    fps = 10
+    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    delay = round(1000 / fps)
 
-# Save Video
-out = cv2.VideoWriter(videoFileName, fourcc, fps, (w, h))
-if not (out.isOpened()):
-    print("File isn't opend!!")
-    sys.exit()
+    out = cv2.VideoWriter(videoFileName, fourcc, fps, (w, h))
 
-# 통신파트
-ip = #IP
-port = #PORT
+    if not out.isOpened():
+        raise IOError("파일을 열지 못하였습니다.")
 
-s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-print('Socket created')
+    # 통신파트
+    ip = "YOUR_IP_ADDRESS"
+    port = "YOUR_PORT_NUMBER"
 
-s.bind((ip,port))
-print('Socket bind complete')
-s.listen(10)
-print('Socket now listening')
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print('소켓이 생성되었습니다.')
 
-conn,addr=s.accept()
+    s.bind((ip, port))
+    print('소켓 바인딩이 완료되었습니다.')
+    s.listen(5)
+    print('소켓이 수신 대기 상태입니다.')
 
-data = b""
-payload_size = struct.calcsize(">L")
-print("payload_size: {}".format(payload_size))
+    conn, addr = s.accept()
 
+    data = b""
+    payload_size = struct.calcsize(">L")
+    print("payload_size: {}".format(payload_size))
 
-while True:
-    # 영상 받는 파트
-    while len(data) < payload_size:
-        print("Recv: {}".format(len(data)))
-        data += conn.recv(4096)
+    while True:
+        try:
+            # 영상 받는 파트
+            while len(data) < payload_size:
+                data += conn.recv(4096)
 
-    print("Done Recv: {}".format(len(data)))
-    packed_msg_size = data[:payload_size]
-    data = data[payload_size:]
-    msg_size = struct.unpack(">L", packed_msg_size)[0]
-    print("msg_size: {}".format(msg_size))
-    while len(data) < msg_size:
-        data += conn.recv(4096)
-    frame_data = data[:msg_size]
-    data = data[msg_size:]
+            packed_msg_size = data[:payload_size]
+            data = data[payload_size:]
+            msg_size = struct.unpack(">L", packed_msg_size)[0]
 
-    frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
-    frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+            while len(data) < msg_size:
+                data += conn.recv(4096)
+            frame_data = data[:msg_size]
+            data = data[msg_size:]
 
-    # 동영상 저장파트
-    inversed = cv2.flip(frame, 1)  # inversed frame
-    out.write(inversed)  # save video frame
-    
-    cv2.waitKey(1)
+            frame = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+            frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+
+            # 동영상 저장파트
+            inversed = cv2.flip(frame, 1)
+            out.write(inversed)
+
+            cv2.waitKey(1)
+
+        except (socket.timeout, ConnectionResetError, ValueError) as e:
+            print("데이터 수신 오류:", e)
+            break
+
+except (socket.error, KeyboardInterrupt) as e:
+    print("소켓 오류:", e)
+
+finally:
+    if out.isOpened():
+        out.release()
+
+    if s is not None:
+        s.close()
